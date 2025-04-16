@@ -1,0 +1,224 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+install.packages("readxl")
+```
+
+
+```{r}
+library(readxl)
+library(dplyr)
+library(ggplot2)
+```
+
+
+```{r}
+data <- read_excel("data.xlsx", sheet = "LFS_Year_2023")
+```
+
+```{r}
+regions <- c(
+  "Yerevan",
+  "Aragatsotn",
+  "Ararat",
+  "Armavir",
+  "Gegharkunik",
+  "Lori",
+  "Kotayq",
+  "Shirak",
+  "Syuniq",
+  "Vayoc Dzor",
+  "Tavush"
+)
+
+```
+
+
+```{r}
+people_by_regions <- data %>%
+  group_by(A3) %>%
+  summarise(
+    n = n()
+  ) %>%
+  mutate(A3 = factor(A3, levels = 1:11, labels = regions)) %>%
+  rename(
+    region = A3,
+    population = n
+  )
+```
+
+
+```{r}
+people_by_regions
+```
+```{r}
+ggplot(people_by_regions, aes(x = region, y = population)) +
+  geom_col(fill = "plum3") +
+  theme_minimal() +
+  labs(
+    title = "Population by Regions",
+    x = "Regions",
+    y = "Population"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r}
+urban_rural <- data %>%
+  group_by(A5) %>%
+  summarise(n = n()) %>%
+  mutate(A5 = factor(A5, levels = c(1, 2), labels = c("Urban", "Rural")))
+```
+
+
+```{r}
+urban_rural
+```
+```{r}
+gender_ratio <- data %>%
+  group_by(B3) %>%
+  summarise(n = n()) %>%
+  mutate(B3 = factor(B3, levels = c(1, 2), labels = c("Male", "Female")))
+```
+
+```{r}
+gender_ratio
+```
+
+
+```{r}
+age_groups <- c(
+  "0 - 4",
+  "5 - 9",
+  "10 - 14",
+  "15 - 19",
+  "20 - 24",
+  "25 - 29",
+  "30 - 34",
+  "35 - 39",
+  "40 - 44",
+  "45 - 49",
+  "50 - 54",
+  "55 - 59",
+  "60 - 64",
+  "65 - 69",
+  "70 - 74",
+  "75+"
+)
+```
+
+
+```{r}
+people_by_age <- data %>%
+  group_by(Age_16groups) %>%
+  summarise(n = n()) %>%
+  mutate(Age_16groups = factor(Age_16groups, levels = 1:16, labels = age_groups)) %>%
+  rename(
+    age_group = Age_16groups,
+    population = n
+  )
+```
+
+
+```{r}
+people_by_age
+```
+```{r}
+ggplot(people_by_age, aes(x = age_groups, y = population)) +
+  geom_col(fill = "plum3") +
+  theme_minimal() +
+  labs(
+    title = "Population by Age Group",
+    x = "Age Group",
+    y = "Population"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r}
+educational_levels <- c("Illiterate", "No primary", "Primary", "Basic", "Secondary / high", 
+                      "Vocational", "Secondary specialized", "Bachelor's degree", 
+                      "Master's degree", "Certified specialist", 
+                      "Post-graduate (Ph.D, doctorate)")
+
+```
+
+```{r}
+people_by_education <- data %>%
+  group_by(B7) %>%
+  summarise(n = n()) %>%
+  mutate(B7 = factor(B7, levels = 1:11, labels = educational_levels)) %>%
+  rename(
+    educational_level = B7,
+    population = n
+  )
+```
+```{r}
+people_by_education
+```
+```{r}
+ggplot(people_by_education, aes(x = educational_level, y = population)) +
+  geom_col(fill = "plum3") +
+  theme_minimal() +
+  labs(
+    title = "Population by Educational Level",
+    x = "Educational Level",
+    y = "Population"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+```{r}
+nace_sectors <- c(
+  "Agriculture, Forestry and Fishing",
+  "Mining and Quarrying",
+  "Manufacturing",
+  "Electricity, Gas, Steam and Air Conditioning Supply",
+  "Water Supply; Sewerage, Waste Management and Remediation Activities",
+  "Construction",
+  "Wholesale and Retail Trade; Repair of Motor Vehicles and Motorcycles",
+  "Transportation and Storage",
+  "Accommodation and Food Service Activities",
+  "Publishing, Broadcasting, and Content Production and Distribution Activities",
+  "Telecommunication, Computer Programming, Consulting, Computing Infrastructure, and other Information Service Activities",
+  "Financial and Insurance Activities",
+  "Real Estate Activities",
+  "Professional, Scientific and Technical Activities",
+  "Administrative and Support Service Activities",
+  "Public Administration and Defence; Compulsory Social Security",
+  "Education",
+  "Human Health and Social Work Activities",
+  "Arts, Sports and Recreation",
+  "Other Service Activities",
+  "Activities of Households as Employers; Undifferentiated Goods and Services Producing Activities of Households for Own Use"
+)
+```
+
+```{r}
+employees_by_industry <- data %>%
+  group_by(E4_21groups_NACE_rev_2.2) %>%
+  summarise(n = n()) %>%
+  mutate(E4_21groups_NACE_rev_2.2 = factor(E4_21groups_NACE_rev_2.2, levels = 1:21, labels = nace_sectors)) %>%
+  rename(
+    industry = E4_21groups_NACE_rev_2.2,
+    employee_number = n
+  )
+```
+```{r}
+employees_by_industry
+```
+
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
