@@ -1,5 +1,5 @@
 ---
-title: "R Notebook"
+title: "Statistics Project Visualizations"
 output: html_notebook
 ---
 
@@ -8,17 +8,10 @@ This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute
 Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
 
 ```{r}
-install.packages("readxl")
-```
-
-
-```{r}
 library(readxl)
 library(dplyr)
 library(ggplot2)
 ```
-
-
 ```{r}
 data <- read_excel("data.xlsx", sheet = "LFS_Year_2023")
 ```
@@ -37,9 +30,7 @@ regions <- c(
   "Vayoc Dzor",
   "Tavush"
 )
-
 ```
-
 
 ```{r}
 people_by_regions <- data %>%
@@ -52,12 +43,10 @@ people_by_regions <- data %>%
     region = A3,
     population = n
   )
-```
 
-
-```{r}
 people_by_regions
 ```
+
 ```{r}
 ggplot(people_by_regions, aes(x = region, y = population)) +
   geom_col(fill = "plum3") +
@@ -70,29 +59,23 @@ ggplot(people_by_regions, aes(x = region, y = population)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-
 ```{r}
 urban_rural <- data %>%
   group_by(A5) %>%
   summarise(n = n()) %>%
   mutate(A5 = factor(A5, levels = c(1, 2), labels = c("Urban", "Rural")))
-```
 
-
-```{r}
 urban_rural
 ```
+
 ```{r}
 gender_ratio <- data %>%
   group_by(B3) %>%
   summarise(n = n()) %>%
   mutate(B3 = factor(B3, levels = c(1, 2), labels = c("Male", "Female")))
-```
 
-```{r}
 gender_ratio
 ```
-
 
 ```{r}
 age_groups <- c(
@@ -115,7 +98,6 @@ age_groups <- c(
 )
 ```
 
-
 ```{r}
 people_by_age <- data %>%
   group_by(Age_16groups) %>%
@@ -125,12 +107,10 @@ people_by_age <- data %>%
     age_group = Age_16groups,
     population = n
   )
-```
 
-
-```{r}
 people_by_age
 ```
+
 ```{r}
 ggplot(people_by_age, aes(x = age_groups, y = population)) +
   geom_col(fill = "plum3") +
@@ -142,7 +122,6 @@ ggplot(people_by_age, aes(x = age_groups, y = population)) +
   ) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
-
 
 ```{r}
 educational_levels <- c("Illiterate", "No primary", "Primary", "Basic", "Secondary / high", 
@@ -161,10 +140,10 @@ people_by_education <- data %>%
     educational_level = B7,
     population = n
   )
-```
-```{r}
+
 people_by_education
 ```
+
 ```{r}
 ggplot(people_by_education, aes(x = educational_level, y = population)) +
   geom_col(fill = "plum3") +
@@ -176,6 +155,7 @@ ggplot(people_by_education, aes(x = educational_level, y = population)) +
   ) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
+
 ```{r}
 nace_sectors <- c(
   "Agriculture, Forestry and Fishing",
@@ -211,14 +191,103 @@ employees_by_industry <- data %>%
     industry = E4_21groups_NACE_rev_2.2,
     employee_number = n
   )
-```
-```{r}
+
 employees_by_industry
 ```
 
+```{r}
+exact_salary_data_points <- data %>%
+  select(E14_1) %>%
+  na.omit() %>%
+  summarise(n = n())
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+exact_salary_data_points
+```
+```{r}
+exact_salary_desc <- data %>%
+  select(E14_1) %>%
+  na.omit() %>%
+  summarise(mean = mean(E14_1), max = max(E14_1), min = min(E14_1), median = median(E14_1))
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+exact_salary_desc
+```
+```{r}
+mean_salary_by_gender <- data %>%
+  select(E14_1, B3) %>%
+  mutate(B3 = factor(B3, levels = 1:2, labels = c("Male", "Female"))) %>%
+  na.omit() %>%
+  group_by(B3) %>%
+  summarise(mean = mean(E14_1), median = median(E14_1), min = min(E14_1), max = max(E14_1))
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+mean_salary_by_gender
+```
+```{r}
+salary_data <- data %>%
+  select(salary = E14_1, gender_code = B3) %>%
+  mutate(
+    gender = factor(gender_code, levels = c(1, 2), labels = c("Male", "Female"))
+  ) %>%
+  filter(!is.na(salary), !is.na(gender))
+
+ggplot(salary_data, aes(x = gender, y = salary, fill = gender)) +
+  geom_boxplot(outlier.shape = NA) +
+  coord_cartesian(ylim = c(0, 500000)) +
+  theme_minimal() +
+  scale_fill_manual(values = c("Male" = "#56B4E9", "Female" = "#E78AC3")) +
+  labs(
+    title = "Salary Distribution by Gender",
+    x = "Gender",
+    y = "Salary"
+  ) +
+  theme(legend.position = "none")
+```
+
+```{r}
+income_ranges <- c(
+  "Up to 55 000 AMD",
+  "55 000 AMD",
+  "55 001 - 110 000 AMD",
+  "110 001 - 220 000 AMD",
+  "220 001 - 440 000 AMD",
+  "440 001 - 600 000 AMD",
+  "600 001 - 700 000 AMD",
+  "Refused to answer",
+  "Do not know / difficult to answer"
+)
+```
+
+```{r}
+categorical_salary_data_points <- data %>%
+  select(E15) %>%
+  na.omit() %>%
+  summarise(number_of_data_points = n())
+
+categorical_salary_data_points
+```
+
+
+```{r}
+categorical_salary_frequency <- data %>%
+  group_by(E15) %>%
+  summarise(n = n()) %>%
+  na.omit() %>%
+  mutate(E15 = factor(E15, levels = 1:9, labels = income_ranges)) %>%
+  rename(
+    income_range = E15,
+    frequency = n
+  )
+
+categorical_salary_frequency
+```
+```{r}
+ggplot(categorical_salary_frequency, aes(x = income_range, y = frequency)) +
+  geom_col(fill = "plum3") +
+  theme_minimal() +
+  labs(
+    title = "Salary Histogram",
+    x = "Income Ranges",
+    y = "Frequency"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
