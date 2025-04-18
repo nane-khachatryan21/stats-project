@@ -5,6 +5,7 @@ output: html_notebook
 
 ```{r}
 library(readxl)
+library(writexl)
 library(dplyr)
 library(ggplot2)
 ```
@@ -36,5 +37,8 @@ cleaned_data <- data %>%
 cleaned_data
 ```
 
-
+Write cleaned data to a new Excel file:
+```{r}
+write_xlsx(cleaned_data, "cleaned_data.xlsx")
+```
 
