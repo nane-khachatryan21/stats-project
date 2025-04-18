@@ -1,0 +1,40 @@
+---
+title: "Data Cleaning"
+output: html_notebook
+---
+
+```{r}
+library(readxl)
+library(dplyr)
+library(ggplot2)
+```
+
+```{r}
+data <- read_excel("data.xlsx", sheet = "LFS_Year_2023")
+```
+
+Identify the most important columns:
+```{r}
+most_important <- c("A3", "A5", "B3", "B7", "E4_21groups_NACE_rev_2.2", "E14_1", "E15")
+labels <- c("Marz", "Urban/Rural", "Sex", "Educational Level", "Industry", "Income (Numerical)", "Income (Categorical)")
+```
+
+Number of missing values for the columns of most importance:
+```{r}
+missing_value_count <- data %>%
+  select(A3, A5, B3, B7, E4_21groups_NACE_rev_2.2, E14_1, E15) %>%
+  summarise(across(everything(), ~sum(is.na(.))))
+  
+missing_value_count
+```
+
+Only leave the rows where either form of salary (numerical or categorical) is present.
+```{r}
+cleaned_data <- data %>%
+  filter(!is.na(E14_1) | !is.na(E15))
+
+cleaned_data
+```
+
+
+
