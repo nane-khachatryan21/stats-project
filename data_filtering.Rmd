@@ -3,17 +3,16 @@ title: "Statistics Project Visualizations"
 output: html_notebook
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
-
 ```{r}
 library(readxl)
 library(dplyr)
 library(ggplot2)
 library(knitr)
 library(tidyr)
+library(sf)
+library(plotly)
 ```
+
 ```{r}
 data <- read_excel("data.xlsx", sheet = "LFS_Year_2023")
 ```
@@ -296,12 +295,6 @@ ggplot(categorical_salary_frequency, aes(x = income_range, y = frequency)) +
 
 Data Cleaning
 
-checking empty rows
-```{r}
-empty_rows <- which(rowSums(is.na(df)) == ncol(df))
-print(empty_rows) # --> there are now missing rows
-```
-
 checking to see how many rows have more than 50% missing data 
 (from the columns we are going to work on)
 ```{r}
@@ -344,7 +337,6 @@ get_mode <- function(x) {
 }
 ```
 
-
 ```{r}
 data %>%
   filter(!is.na(E14_2)) %>%
@@ -356,14 +348,14 @@ data %>%
   filter(!is.na(E14_2)) %>%
   count(E14_2, sort = TRUE)
 ```
+
 ***Descriptive Data Analysis and Vizualizations***
 
 ```{r}
-cleaned_data <- read_excel("C:/Users/User/Desktop/Sophomore/semester 2/statistics/project material/R codes/stats-project/cleaned_data.xlsx")
-
+cleaned_data <- read_excel("cleaned_data.xlsx")
 ```
 
-*Bar Plot: Counts by Age Range and Gender*
+*Barplot: Counts by Age Range and Gender*
 
 Decoding data
 ```{r}
@@ -409,26 +401,48 @@ decoded_data <- cleaned_data %>%
       E15 == 9 ~ "Do not know / difficult to answer",
       TRUE ~ NA_character_
     )
+  ) %>%
+  mutate(
+    A3 = case_when(
+      A3 == 1 ~ "Yerevan",
+      A3 == 2 ~ "Aragatsotn",
+      A3 == 3 ~ "Ararat",
+      A3 == 4 ~ "Armavir",
+      A3 == 5 ~ "Gegharkunik",
+      A3 == 6 ~ "Lori",
+      A3 == 7 ~ "Kotayq",
+      A3 == 8 ~ "Shirak",
+      A3 == 9 ~ "Syuniq",
+      A3 == 10 ~ "Vayoc Dzor",
+      A3 == 11 ~ "Tavush",
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  mutate(
+    A5 = case_when(
+      A5 == 1 ~ "Urban",
+      A5 == 2 ~ "Rural",
+      TRUE ~ NA_character_
+    )
   )
-
 ```
 
 ```{r}
 ggplot(decoded_data, aes(x = factor(Age_16groups), fill = factor(B3))) +
   geom_bar(position = "stack") + 
-  
   labs(
     title = "Age Distribution by Gender",
     x = "Age Range",
     y = "Count",
     fill = "Gender"
   ) +
+  scale_fill_manual(values = c("Male" = "#56B4E9", "Female" = "#E78AC3")) +
+  theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
 ```
 
 Also, let's calculate this numerically.
 ```{r}
-library(knitr)
 gender_counts <- decoded_data %>%
   group_by(Age_16groups, B3) %>%
   summarise(Count = n(), .groups = "drop")
@@ -438,7 +452,7 @@ gender_counts_wide <- gender_counts %>%
   rename("Age Range" = Age_16groups)
 
 # display
-knitr::kable(gender_counts_wide, caption = "Gender Counts by Age Group")
+knitr::kable(gender_counts_wide, caption = "Gender Count by Age Group")
 ```
 Findings: In this chart, we have considered the records where the implicit salaries are mentioned.
 Both the barchart and the tables highlight that the number of males taking the survey is higher than the number of women, independent of their age range.
@@ -461,7 +475,6 @@ age_gender_stats <- decoded_data %>%
 ```
 
 ```{r}
-
 ggplot(age_gender_stats, 
        aes(x = Age_16groups, y = mean_salary, 
            color = B3, group = B3)) +
@@ -495,7 +508,6 @@ decoded_data <- decoded_data%>%
       B8 == 2 ~ "2001-2005",
       B8 == 3 ~ "2006-2010",
       B8 == 4 ~ "Since 2012"
-      
     )
   )
 ```
@@ -524,7 +536,6 @@ plot_data <- decoded_data %>%
   ) %>%
   mutate(salary_label = paste0(format(round(mean_salary), big.mark = ","), " AMD"))
 
-
 ggplot(plot_data, aes(x = graduation_year_ordered, y = mean_salary, 
                      color = B3, group = B3)) +
   geom_pointrange(aes(ymin = lower_ci, ymax = upper_ci),
@@ -542,8 +553,6 @@ ggplot(plot_data, aes(x = graduation_year_ordered, y = mean_salary,
 
 Let's also see the count of men and women based on the graduation year.
 ```{r}
-library(dplyr)
-
 graduation_summary <- decoded_data %>%
   filter(!is.na(B3), !is.na(B8)) %>%
   count(Gender = B3, Graduation_Year = B8, name = "Count") %>%
@@ -562,8 +571,6 @@ print(graduation_summary)
 
 Findings: In this chart, we have considered the records where the implicit salaries are mentioned.
 We see that the number of females is bigger here. However, the mean salary of the males is still higher, with bigger confidence intervals as in the previous chart.
-
-
 
  *Can We Find the Mean Salary by Work Location and Gender*
 ```{r}
@@ -587,17 +594,8 @@ mutate(
 
 unique(cleaned_data['J3_1'])
 unique(decoded_data['J3_2'])
-
 ```
 It comes out that we cannot work with columns J3_1 and J3_2, which specify if the survey taker works in Armenia/abroad/both/no paid job. The reason is that when cleaning the data, we kept only the records where salary range or exact salary is mentioned.
-
-
-
-
-
-
-
-
 
 ```{r}
 decoded_data <- decoded_data%>%
@@ -617,9 +615,7 @@ decoded_data <- decoded_data%>%
       F6 == 4 ~ "Self-employed"
     )
   )
-  
 ```
-
 
 Let's see how many records we have with filled primary job and secondary ones.
 ```{r}
@@ -627,14 +623,15 @@ primary_job_count <- decoded_data %>%
   filter(!is.na(E10)) %>%  
   count(B3, name = "count")  
 primary_job_count
-
-secondary_job_count <- decoded_data %>%
-  filter(!is.na(F6)) %>%  
-  count(B3, name = "count")  
-secondary_job_count
-
 ```
 
+```{r}
+secondary_job_count <- decoded_data %>%
+  filter(!is.na(F6)) %>%  
+  count(B3, name = "count")
+
+secondary_job_count
+```
 
 ```{r}
 plot_data <- decoded_data %>%
@@ -685,4 +682,99 @@ ggplot(summary_stats,
 ```
 Findings: In this chart, we have considered the records where the implicit salaries are mentioned.
 Concentrating on the chart above, we can see that only females are recorded as self-employed (keeping in mind that the data is filtered to keep only records with mentioned salary). Hte analysis also shows that males earch more in NGOs, Private and Public enterprises, but the highest difference is in Private companies. Although there are more females who answered this questions then males, but the difference still exists.
+
+scatterplot of salaries of men vs women
+piechart of industries
+mean salary by industry
+mean salary of men vs women for each industry
+mean salary by age groups
+
+```{r}
+mean_salary_by_region <- decoded_data %>%
+  select(gender = B3, region = A3, salary = E14_1) %>%
+  filter(!is.na(region), !is.na(gender), !is.na(salary)) %>%
+  group_by(region, gender) %>%
+  summarise(mean_salary = mean(salary, na.rm = TRUE))
+  
+mean_salary_by_region
+```
+```{r}
+difference_in_mean_salary_by_region <- mean_salary_by_region %>%
+  pivot_wider(names_from = gender, values_from = mean_salary) %>%
+  mutate(wage_gap = Male - Female) %>%
+  select(region, wage_gap)
+
+difference_in_mean_salary_by_region
+```
+
+```{r}
+armenia_map <- st_read("armenia.json")
+```
+```{r}
+region_name_map <- tibble::tibble(
+  map_name = c("Tavush", "Lori", "Shirak", "Gegharkunik", "Vayots Dzor", 
+               "Syunik", "Ararat", "Aragatsotn", "Armavir", "Kotayk", "Erevan"),
+  region = c("Tavush", "Lori", "Shirak", "Gegharkunik", "Vayoc Dzor",
+             "Syuniq", "Ararat", "Aragatsotn", "Armavir", "Kotayq", "Yerevan")  # match your data
+)
+
+armenia_map <- armenia_map %>%
+  left_join(region_name_map, by = c("name" = "map_name"))
+```
+
+
+```{r}
+wage_gap_map <- armenia_map %>%
+  left_join(difference_in_mean_salary_by_region, by = "region")
+
+ggplot(wage_gap_map) +
+  geom_sf(aes(fill = wage_gap), color = "white") +
+  scale_fill_gradientn(
+    colors = c("navy", "skyblue", "yellow", "orange", "red"),
+    na.value = "gray90",
+    name = "Wage Gap (AMD)"
+  ) +
+  labs(
+    title = "Gender Wage Gap by Region (Armenia)",
+    subtitle = "Difference in mean salary: Male - Female",
+    caption = "Data: Your Survey"
+  ) +
+  theme_minimal()
+
+```
+```{r}
+p <- ggplot(wage_gap_map) +
+  geom_sf(aes(fill = wage_gap, text = paste("Region:", name, "<br>Wage Gap:", wage_gap))) +
+  scale_fill_viridis_c() +
+  theme_minimal()
+
+ggplotly(p, tooltip = "text")
+```
+
+Urban vs Rural mean salaries
+
+```{r}
+urban_rural_salary <- decoded_data %>%
+  select(settlement = A5, gender = B3, salary = E14_1) %>%
+  filter(!is.na(settlement), !is.na(gender), !is.na(salary)) %>%
+  group_by(settlement, gender) %>%
+  summarise(mean_salary = mean(salary), min_salary = min(salary), max_salary = max(salary))
+
+urban_rural_salary
+```
+
+
+```{r}
+
+ggplot(decoded_data, aes(x = A5, y = E14_1, fill = A5)) +
+  geom_boxplot(outlier.color = "red", outlier.alpha = 0.3) +
+    coord_cartesian(ylim = c(0, 500000)) +
+  labs(
+    title = "Income Distribution: Urban vs Rural",
+    x = "Settlement Type",
+    y = "Salary (AMD)"
+  ) +
+  theme_minimal() +
+  scale_fill_manual(values = c("Urban" = "#66c2a5", "Rural" = "#fc8d62"))
+```
 
