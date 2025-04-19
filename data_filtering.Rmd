@@ -440,6 +440,9 @@ gender_counts_wide <- gender_counts %>%
 # display
 knitr::kable(gender_counts_wide, caption = "Gender Counts by Age Group")
 ```
+Findings: In this chart, we have considered the records where the implicit salaries are mentioned.
+Both the barchart and the tables highlight that the number of males taking the survey is higher than the number of women, independent of their age range.
+
 *Bar Plot: Mean Salary by Age Range and Gender*
 ```{r}
 age_gender_stats <- decoded_data %>%
@@ -472,7 +475,7 @@ ggplot(age_gender_stats,
             position = position_dodge(width = 0.5),
             vjust = -0.5, size = 3, color = "black") +
   labs(
-    title = "Mean Salary by Age Group and Gender",
+    title = "Mean Salary by Age Group and Gender with 95% Confidence Intervals",
     x = "Age Category", 
     y = "Mean Salary (AMD)",
     color = "Gender"
@@ -480,7 +483,8 @@ ggplot(age_gender_stats,
   scale_y_continuous(labels = scales::comma) +
   theme_minimal()
 ```
-
+Findings: In this chart, we have considered the records where the implicit salaries are mentioned.
+We can see that the salary of males in the sample is considerably higher and the condifence interval is bigger. However, the length of confidence intervals for the mean salary of males are longer, which means that we are not as much certain about the mean as for the females. The lower bounds of the confidence intervals of males' mean salaries are closers to the females' mean salaries.
 
 *Mean Salary with 95% Confidence Intervals*
 ```{r}
@@ -536,25 +540,31 @@ ggplot(plot_data, aes(x = graduation_year_ordered, y = mean_salary,
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-As the difference in big, let's see how many records are made my males and females.
+Let's also see the count of men and women based on the graduation year.
 ```{r}
-# not null values
-total_count <- decoded_data %>%
-  filter(!is.na(E14_1)) %>%
-  nrow()
+library(dplyr)
 
-gender_counts <- decoded_data %>%
-  filter(!is.na(E14_1)) %>%
-  count(B3, name = "count") 
+graduation_summary <- decoded_data %>%
+  filter(!is.na(B3), !is.na(B8)) %>%
+  count(Gender = B3, Graduation_Year = B8, name = "Count") %>%
 
-# percentages
-gender_percents <- decoded_data %>%
-  filter(!is.na(E14_1)) %>%
-  count(B3, name = "count") %>%
-  mutate(percent = count / sum(count) * 100)
+  group_by(Graduation_Year) %>%
+  mutate(Percentage = Count / sum(Count) * 100) %>%
+  ungroup() %>%
+  
+  mutate(Percentage_Label = paste0(round(Percentage, 1), "%")) %>%
+  
+  select(Gender, Graduation_Year, Count, Percentage, Percentage_Label) %>%
+  arrange(Graduation_Year, Gender)
 
-print(gender_percents)
+print(graduation_summary)
 ```
+
+Findings: In this chart, we have considered the records where the implicit salaries are mentioned.
+We see that the number of females is bigger here. However, the mean salary of the males is still higher, with bigger confidence intervals as in the previous chart.
+
+
+
  *Can We Find the Mean Salary by Work Location and Gender*
 ```{r}
 decoded_data <- decoded_data%>%
@@ -611,7 +621,7 @@ decoded_data <- decoded_data%>%
 ```
 
 
-Let's see how many records we have with filled primary job and secondary
+Let's see how many records we have with filled primary job and secondary ones.
 ```{r}
 primary_job_count <- decoded_data %>%
   filter(!is.na(E10)) %>%  
@@ -673,6 +683,6 @@ ggplot(summary_stats,
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
-
-
+Findings: In this chart, we have considered the records where the implicit salaries are mentioned.
+Concentrating on the chart above, we can see that only females are recorded as self-employed (keeping in mind that the data is filtered to keep only records with mentioned salary). Hte analysis also shows that males earch more in NGOs, Private and Public enterprises, but the highest difference is in Private companies. Although there are more females who answered this questions then males, but the difference still exists.
 
