@@ -11,6 +11,8 @@ Try executing this chunk by clicking the *Run* button within the chunk or by pla
 library(readxl)
 library(dplyr)
 library(ggplot2)
+library(knitr)
+library(tidyr)
 ```
 ```{r}
 data <- read_excel("data.xlsx", sheet = "LFS_Year_2023")
@@ -317,16 +319,6 @@ print(good_rows)
 ```
 
 
-we can get rid of records with more than 50% missing values
-```{r}
-clean_data <- exceeds
-
-print(length(clean_data))
-
-```
-
-now, we can continue with clean_data
-
 check how many empty rows there are
 ```{r}
 sum(apply(data, 1, function(row) all(is.na(row))))
@@ -364,4 +356,323 @@ data %>%
   filter(!is.na(E14_2)) %>%
   count(E14_2, sort = TRUE)
 ```
+***Descriptive Data Analysis and Vizualizations***
+
+```{r}
+cleaned_data <- read_excel("C:/Users/User/Desktop/Sophomore/semester 2/statistics/project material/R codes/stats-project/cleaned_data.xlsx")
+
+```
+
+*Bar Plot: Counts by Age Range and Gender*
+
+Decoding data
+```{r}
+decoded_data <- cleaned_data %>%
+  mutate(
+    B3 = case_when(
+      B3 == 1 ~ "Male",
+      B3 == 2 ~ "Female",
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  mutate(
+    Age_16groups = case_when(
+      Age_16groups == 1 ~ "0-4",
+      Age_16groups == 2 ~ "5-9",
+      Age_16groups == 3 ~ "10-14",
+      Age_16groups == 4 ~ "15-19",
+      Age_16groups == 5 ~ "20-24",
+      Age_16groups == 6 ~ "25-29",
+      Age_16groups == 7 ~ "30-34",
+      Age_16groups == 8 ~ "35-39",
+      Age_16groups == 9 ~ "40-44",
+      Age_16groups == 10 ~ "45-49",
+      Age_16groups == 11 ~ "50-54",
+      Age_16groups == 12 ~ "55-59",
+      Age_16groups == 13 ~ "60-64",
+      Age_16groups == 14 ~ "65-69",
+      Age_16groups == 15 ~ "70-74",
+      Age_16groups == 16 ~ "75+",
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  mutate(
+    E15 = case_when(
+      E15 == 1 ~ "Up to 55 000 AMD",
+      E15 == 2 ~ "55 000 AMD",
+      E15 == 3 ~ "55 001 -  110 000 AMD",
+      E15 == 4 ~ "110 001 - 220 000 AMD",
+      E15 == 5 ~ "220 001 - 440 000 AMD",
+      E15 == 6 ~ "440 001 - 600 000 AMD",
+      E15 == 7 ~ "600 001 - 700 000 AMD",
+      E15 == 8 ~ "Refused to answer",
+      E15 == 9 ~ "Do not know / difficult to answer",
+      TRUE ~ NA_character_
+    )
+  )
+
+```
+
+```{r}
+ggplot(decoded_data, aes(x = factor(Age_16groups), fill = factor(B3))) +
+  geom_bar(position = "stack") + 
+  
+  labs(
+    title = "Age Distribution by Gender",
+    x = "Age Range",
+    y = "Count",
+    fill = "Gender"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+```
+
+Also, let's calculate this numerically.
+```{r}
+library(knitr)
+gender_counts <- decoded_data %>%
+  group_by(Age_16groups, B3) %>%
+  summarise(Count = n(), .groups = "drop")
+
+gender_counts_wide <- gender_counts %>%
+  pivot_wider(names_from = B3, values_from = Count, values_fill = 0) %>%
+  rename("Age Range" = Age_16groups)
+
+# display
+knitr::kable(gender_counts_wide, caption = "Gender Counts by Age Group")
+```
+*Bar Plot: Mean Salary by Age Range and Gender*
+```{r}
+age_gender_stats <- decoded_data %>%
+  filter(!is.na(E14_1), !is.na(Age_16groups), !is.na(B3)) %>%
+  group_by(Age_16groups, B3) %>%
+  summarize(
+    mean_salary = mean(E14_1),
+    se = sd(E14_1) / sqrt(n()),
+    lower_ci = mean_salary - 1.96 * se,
+    upper_ci = mean_salary + 1.96 * se,
+    n = n(),
+    .groups = "drop"
+  ) %>%
+  filter(n >= 10) %>%
+  mutate(salary_label = paste0(format(round(mean_salary), big.mark = ",")))
+```
+
+```{r}
+
+ggplot(age_gender_stats, 
+       aes(x = Age_16groups, y = mean_salary, 
+           color = B3, group = B3)) +
+  geom_line(linewidth = 1.2) +
+  geom_pointrange(
+    aes(ymin = lower_ci, ymax = upper_ci),
+    position = position_dodge(width = 0.2),
+    size = 0.7
+  ) +
+  geom_text(aes(y = upper_ci, label = salary_label),
+            position = position_dodge(width = 0.5),
+            vjust = -0.5, size = 3, color = "black") +
+  labs(
+    title = "Mean Salary by Age Group and Gender",
+    x = "Age Category", 
+    y = "Mean Salary (AMD)",
+    color = "Gender"
+  ) +
+  scale_y_continuous(labels = scales::comma) +
+  theme_minimal()
+```
+
+
+*Mean Salary with 95% Confidence Intervals*
+```{r}
+decoded_data <- decoded_data%>%
+  mutate(
+    B8 = case_when(
+      B8 == 1 ~ "Up tp 2000",
+      B8 == 2 ~ "2001-2005",
+      B8 == 3 ~ "2006-2010",
+      B8 == 4 ~ "Since 2012"
+      
+    )
+  )
+```
+
+Based on the salary they have provided.
+
+```{r}
+correct_order <- c("Up tp 2000", "2001-2005", "2006-2010", "Since 2012")
+
+plot_data <- decoded_data %>%
+  mutate(
+    graduation_year_ordered = factor(
+      B8,
+      levels = correct_order,
+      ordered = TRUE
+    )
+  ) %>%
+  filter(!is.na(E14_1)) %>%
+  group_by(graduation_year_ordered, B3) %>%  # Group by the ordered factor
+  summarize(
+    mean_salary = mean(E14_1),
+    se = sd(E14_1) / sqrt(n()),
+    lower_ci = mean_salary - 1.96 * se,
+    upper_ci = mean_salary + 1.96 * se,
+    .groups = "drop"  # Explicitly drop grouping
+  ) %>%
+  mutate(salary_label = paste0(format(round(mean_salary), big.mark = ","), " AMD"))
+
+
+ggplot(plot_data, aes(x = graduation_year_ordered, y = mean_salary, 
+                     color = B3, group = B3)) +
+  geom_pointrange(aes(ymin = lower_ci, ymax = upper_ci),
+                 position = position_dodge(width = 0.5)) +
+  geom_line(position = position_dodge(width = 0.5)) +
+  geom_text(aes(y = upper_ci, label = salary_label),
+            position = position_dodge(width = 0.5),
+            vjust = -0.5, size = 3, color = "black") +
+  labs(title = "Mean Salary with 95% Confidence Intervals",
+       x = "Graduation Year", y = "Mean Salary (AMD)",
+       color = "Gender") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+As the difference in big, let's see how many records are made my males and females.
+```{r}
+# not null values
+total_count <- decoded_data %>%
+  filter(!is.na(E14_1)) %>%
+  nrow()
+
+gender_counts <- decoded_data %>%
+  filter(!is.na(E14_1)) %>%
+  count(B3, name = "count") 
+
+# percentages
+gender_percents <- decoded_data %>%
+  filter(!is.na(E14_1)) %>%
+  count(B3, name = "count") %>%
+  mutate(percent = count / sum(count) * 100)
+
+print(gender_percents)
+```
+ *Can We Find the Mean Salary by Work Location and Gender*
+```{r}
+decoded_data <- decoded_data%>%
+mutate(
+    J3_1 = case_when(
+      J3_1 == 1 ~ "Armenia",
+      J3_1 == 2 ~ "Abroad",
+      J3_1 == 3 ~ "No Paid Job"
+      
+    )
+  ) %>%
+mutate(
+    J3_2 = case_when(
+      J3_2 == 1 ~ "Armenia",
+      J3_2 == 2 ~ "Abroad",
+      J3_2 == 3 ~ "No Paid Job"
+      
+    )
+  )
+
+unique(cleaned_data['J3_1'])
+unique(decoded_data['J3_2'])
+
+```
+It comes out that we cannot work with columns J3_1 and J3_2, which specify if the survey taker works in Armenia/abroad/both/no paid job. The reason is that when cleaning the data, we kept only the records where salary range or exact salary is mentioned.
+
+
+
+
+
+
+
+
+
+```{r}
+decoded_data <- decoded_data%>%
+  mutate(
+    E10 = case_when(
+      E10 == 1 ~ "Public",
+      E10 == 2 ~ "NGO",
+      E10 == 3 ~ "Private",
+      E10 == 4 ~ "Self-emplyed"
+    )
+  ) %>%
+  mutate(
+    F6 = case_when(
+      F6 == 1 ~ "Public",
+      F6 == 2 ~ "NGO",
+      F6 == 3 ~ "Private",
+      F6 == 4 ~ "Self-employed"
+    )
+  )
+  
+```
+
+
+Let's see how many records we have with filled primary job and secondary
+```{r}
+primary_job_count <- decoded_data %>%
+  filter(!is.na(E10)) %>%  
+  count(B3, name = "count")  
+primary_job_count
+
+secondary_job_count <- decoded_data %>%
+  filter(!is.na(F6)) %>%  
+  count(B3, name = "count")  
+secondary_job_count
+
+```
+
+
+```{r}
+plot_data <- decoded_data %>%
+  select(gender = B3, salary = E14_1, ownership = E10) %>%  
+  filter(!is.na(salary), !is.na(ownership)) %>%              
+  mutate(ownership = factor(ownership)) 
+
+summary_stats <- plot_data %>%
+  group_by(gender, ownership) %>%
+  summarize(
+    mean_salary = mean(salary),
+    se = sd(salary) / sqrt(n()),
+    lower_ci = mean_salary - 1.96 * se,
+    upper_ci = mean_salary + 1.96 * se,
+    n = n(),
+    .groups = "drop"
+  ) %>%
+  filter(n >= 10) 
+```
+
+```{r}
+ggplot(summary_stats, 
+       aes(x = ownership, y = mean_salary, fill = gender)) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.7) +
+  geom_errorbar(
+    aes(ymin = lower_ci, ymax = upper_ci),
+    position = position_dodge(width = 0.8),
+    width = 0.2,
+    color = "black"
+  ) +
+  geom_text(
+    aes(label = paste0(round(mean_salary/1000, 1), "k \n(n=", n, ")"),
+        y = upper_ci),
+    position = position_dodge(width = 0.8),
+    vjust = -0.5,
+    size = 3
+  ) +
+  labs(
+    title = "Mean Salary (AMD) by Company Ownership (Primary Job)",
+    subtitle = "Error bars show 95% confidence intervals",
+    x = "Ownership Type",
+    y = "Mean Salary (AMD)",
+    fill = "Gender"
+  ) +
+  scale_y_continuous(labels = scales::comma) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
 
