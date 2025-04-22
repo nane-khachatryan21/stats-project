@@ -349,7 +349,7 @@ data %>%
   count(E14_2, sort = TRUE)
 ```
 
-***Descriptive Data Analysis and Vizualizations***
+***Descriptive Data Analysis and Visualizations***
 
 ```{r}
 cleaned_data <- read_excel("cleaned_data.xlsx")
@@ -681,23 +681,21 @@ ggplot(summary_stats,
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 Findings: In this chart, we have considered the records where the implicit salaries are mentioned.
-Concentrating on the chart above, we can see that only females are recorded as self-employed (keeping in mind that the data is filtered to keep only records with mentioned salary). Hte analysis also shows that males earch more in NGOs, Private and Public enterprises, but the highest difference is in Private companies. Although there are more females who answered this questions then males, but the difference still exists.
-
-scatterplot of salaries of men vs women
-piechart of industries
-mean salary by industry
-mean salary of men vs women for each industry
-mean salary by age groups
+Concentrating on the chart above, we can see that only females are recorded as self-employed (keeping in mind that the data is filtered to keep only records with mentioned salary). The analysis also shows that males earn more in NGOs, Private and Public enterprises, but the highest difference is in Private companies. Although there are more females who answered these questions then males, the difference still exists.
 
 ```{r}
 mean_salary_by_region <- decoded_data %>%
   select(gender = B3, region = A3, salary = E14_1) %>%
   filter(!is.na(region), !is.na(gender), !is.na(salary)) %>%
   group_by(region, gender) %>%
-  summarise(mean_salary = mean(salary, na.rm = TRUE))
+  summarise(mean_salary = mean(salary, na.rm = TRUE),
+            median_salary = median(salary, na.rm = TRUE), 
+            min_salary = min(salary, na.rm = TRUE), 
+            max_salary = max(salary, na.rm = TRUE))
   
 mean_salary_by_region
 ```
+
 ```{r}
 difference_in_mean_salary_by_region <- mean_salary_by_region %>%
   pivot_wider(names_from = gender, values_from = mean_salary) %>%
@@ -750,6 +748,7 @@ p <- ggplot(wage_gap_map) +
 
 ggplotly(p, tooltip = "text")
 ```
+Findings: As shown in the map, there is a wage gap in all regions of Armenia, which fluctuates roughly between 50000 and 25000 AMD, with the smallest gap present in Ararat and the biggest in Armavir.
 
 Urban vs Rural mean salaries
 
@@ -777,4 +776,4 @@ ggplot(decoded_data, aes(x = A5, y = E14_1, fill = A5)) +
   theme_minimal() +
   scale_fill_manual(values = c("Urban" = "#66c2a5", "Rural" = "#fc8d62"))
 ```
-
+Findings: The mean salary in urban settlements is higher than in rural settlements. Moreover, the range of salaries is much bigger than that of urban salaries. 
