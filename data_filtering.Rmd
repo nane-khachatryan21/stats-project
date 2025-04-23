@@ -185,7 +185,6 @@ nace_sectors <- c(
 )
 ```
 
-
 ```{r}
 exact_salary_data_points <- data %>%
   select(E14_1) %>%
@@ -494,6 +493,22 @@ decoded_data <- cleaned_data %>%
       F6 == 2 ~ "NGO",
       F6 == 3 ~ "Private",
       F6 == 4 ~ "Self-employed"
+    )
+  ) %>%
+  mutate(
+    B7 = case_when(
+      B7 == 1 ~ "Illiterate",
+      B7 == 2 ~ "No primary",
+      B7 == 3 ~ "Primary",
+      B7 == 4 ~ "Basic",
+      B7 == 5 ~ "Secondary / high",
+      B7 == 6 ~ "Vocational",
+      B7 == 7 ~ "Secondary specialized",
+      B7 == 8 ~ "Bachelor's degree",
+      B7 == 9 ~ "Master's degree",
+      B7 == 10 ~ "Certified specialist",
+      B7 == 11 ~ "Post-graduate (Ph.D, doctorate, internship, residency)",
+      TRUE ~ NA_character_
     )
   )
 ```
@@ -835,7 +850,7 @@ ggplot(decoded_data, aes(x = factor(E4_21groups_NACE_rev_2.2), fill = factor(B3)
 ggplot(decoded_data, aes(x = factor(E2_9group), fill = factor(B3))) +
   geom_bar(position = "stack") + 
   labs(
-    title = "Industry Distribution by Gender",
+    title = "Job/Activity Distribution by Gender",
     x = "Industry",
     y = "Count",
     fill = "Gender"
@@ -891,5 +906,38 @@ ggplot(job_title_salary_overview,
   scale_fill_manual(values = c("Male" = "#56B4E9", "Female" = "#E78AC3")) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+settlement_job_hypothesis_test_data <- decoded_data %>%
+  select(settlement = A5, job = E2_9group, gender = B3, salary = E14_1) %>%
+  filter(!is.na(settlement), !is.na(job), !is.na(gender), !is.na(salary)) %>%
+  group_by(settlement, job, gender) %>%
+  summarise(n = n(),
+            mean = mean(salary),
+            sd = sd(salary))
+
+settlement_job_hypothesis_test_data
+```
+```{r}
+educational_level_distribution <- decoded_data %>%
+  select(education = B7, gender = B3, salary = E14_1) %>%
+  filter(!is.na(education), !is.na(gender), !is.na(salary)) %>%
+  group_by(education) %>%
+  summarise(n = n())
+
+educational_level_distribution
+```
+
+```{r}
+educational_level_salary_overview <- decoded_data %>%
+  select(education = B7, gender = B3, salary = E14_1) %>%
+  filter(!is.na(education), !is.na(gender), !is.na(salary)) %>%
+  group_by(education, gender) %>%
+  summarise(n = n(),
+            mean = mean(salary),
+            sd = sd(salary))
+
+educational_level_salary_overview
 ```
 
