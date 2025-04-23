@@ -13,6 +13,8 @@ library(sf)
 library(plotly)
 ```
 
+**General Overview of the Data**
+
 ```{r}
 data <- read_excel("data.xlsx", sheet = "LFS_Year_2023")
 ```
@@ -183,18 +185,6 @@ nace_sectors <- c(
 )
 ```
 
-```{r}
-employees_by_industry <- data %>%
-  group_by(E4_21groups_NACE_rev_2.2) %>%
-  summarise(n = n()) %>%
-  mutate(E4_21groups_NACE_rev_2.2 = factor(E4_21groups_NACE_rev_2.2, levels = 1:21, labels = nace_sectors)) %>%
-  rename(
-    industry = E4_21groups_NACE_rev_2.2,
-    employee_number = n
-  )
-
-employees_by_industry
-```
 
 ```{r}
 exact_salary_data_points <- data %>%
@@ -357,7 +347,7 @@ cleaned_data <- read_excel("cleaned_data.xlsx")
 
 *Barplot: Counts by Age Range and Gender*
 
-Decoding data
+Decoding the data
 ```{r}
 decoded_data <- cleaned_data %>%
   mutate(
@@ -423,6 +413,87 @@ decoded_data <- cleaned_data %>%
       A5 == 1 ~ "Urban",
       A5 == 2 ~ "Rural",
       TRUE ~ NA_character_
+    )
+  ) %>%
+  mutate(
+    E2_9group = case_when(
+      E2_9group == 1 ~ "Legislators & managers",
+      E2_9group == 2 ~ "Professionals",
+      E2_9group == 3 ~ "Technicians",
+      E2_9group == 4 ~ "Clerks",
+      E2_9group == 5 ~ "Service & sales",
+      E2_9group == 6 ~ "Agricultural workers",
+      E2_9group == 7 ~ "Craft workers",
+      E2_9group == 8 ~ "Operators",
+      E2_9group == 9 ~ "Elementary occupations",
+      TRUE ~ NA_character_
+      ) 
+    ) %>%
+  mutate(
+    E4_21groups_NACE_rev_2.2 = case_when(
+      E4_21groups_NACE_rev_2.2 == 1 ~ "Agriculture",
+      E4_21groups_NACE_rev_2.2 == 2 ~ "Mining",
+      E4_21groups_NACE_rev_2.2 == 3 ~ "Manufacturing",
+      E4_21groups_NACE_rev_2.2 == 4 ~ "Utilities",
+      E4_21groups_NACE_rev_2.2 == 5 ~ "Water & Waste",
+      E4_21groups_NACE_rev_2.2 == 6 ~ "Construction",
+      E4_21groups_NACE_rev_2.2 == 7 ~ "Trade & Repair",
+      E4_21groups_NACE_rev_2.2 == 8 ~ "Transport & Storage",
+      E4_21groups_NACE_rev_2.2 == 9 ~ "Hospitality",
+      E4_21groups_NACE_rev_2.2 == 10 ~ "Media & Publishing",
+      E4_21groups_NACE_rev_2.2 == 11 ~ "IT & Telecom",
+      E4_21groups_NACE_rev_2.2 == 12 ~ "Finance",
+      E4_21groups_NACE_rev_2.2 == 13 ~ "Real Estate",
+      E4_21groups_NACE_rev_2.2 == 14 ~ "Science & Tech",
+      E4_21groups_NACE_rev_2.2 == 15 ~ "Admin Support",
+      E4_21groups_NACE_rev_2.2 == 16 ~ "Public Admin",
+      E4_21groups_NACE_rev_2.2 == 17 ~ "Education",
+      E4_21groups_NACE_rev_2.2 == 18 ~ "Health & Social",
+      E4_21groups_NACE_rev_2.2 == 19 ~ "Arts & Sports",
+      E4_21groups_NACE_rev_2.2 == 20 ~ "Other Services",
+      E4_21groups_NACE_rev_2.2 == 21 ~ "Household Work",
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  mutate(
+    B8 = case_when(
+      B8 == 1 ~ "Up tp 2000",
+      B8 == 2 ~ "2001-2005",
+      B8 == 3 ~ "2006-2010",
+      B8 == 4 ~ "Since 2012",
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  mutate(
+    J3_1 = case_when(
+      J3_1 == 1 ~ "Armenia",
+      J3_1 == 2 ~ "Abroad",
+      J3_1 == 3 ~ "No Paid Job",
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  mutate(
+    J3_2 = case_when(
+      J3_2 == 1 ~ "Armenia",
+      J3_2 == 2 ~ "Abroad",
+      J3_2 == 3 ~ "No Paid Job",
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  mutate(
+    E10 = case_when(
+      E10 == 1 ~ "Public",
+      E10 == 2 ~ "NGO",
+      E10 == 3 ~ "Private",
+      E10 == 4 ~ "Self-emplyed"
+    )
+  ) %>%
+  mutate(
+    F6 = case_when(
+      F6 == 1 ~ "Public",
+      F6 == 2 ~ "NGO",
+      F6 == 3 ~ "Private",
+      F6 == 4 ~ "Self-employed"
     )
   )
 ```
@@ -500,17 +571,6 @@ Findings: In this chart, we have considered the records where the implicit salar
 We can see that the salary of males in the sample is considerably higher and the condifence interval is bigger. However, the length of confidence intervals for the mean salary of males are longer, which means that we are not as much certain about the mean as for the females. The lower bounds of the confidence intervals of males' mean salaries are closers to the females' mean salaries.
 
 *Mean Salary with 95% Confidence Intervals*
-```{r}
-decoded_data <- decoded_data%>%
-  mutate(
-    B8 = case_when(
-      B8 == 1 ~ "Up tp 2000",
-      B8 == 2 ~ "2001-2005",
-      B8 == 3 ~ "2006-2010",
-      B8 == 4 ~ "Since 2012"
-    )
-  )
-```
 
 Based on the salary they have provided.
 
@@ -574,48 +634,10 @@ We see that the number of females is bigger here. However, the mean salary of th
 
  *Can We Find the Mean Salary by Work Location and Gender*
 ```{r}
-decoded_data <- decoded_data%>%
-mutate(
-    J3_1 = case_when(
-      J3_1 == 1 ~ "Armenia",
-      J3_1 == 2 ~ "Abroad",
-      J3_1 == 3 ~ "No Paid Job"
-      
-    )
-  ) %>%
-mutate(
-    J3_2 = case_when(
-      J3_2 == 1 ~ "Armenia",
-      J3_2 == 2 ~ "Abroad",
-      J3_2 == 3 ~ "No Paid Job"
-      
-    )
-  )
-
 unique(cleaned_data['J3_1'])
 unique(decoded_data['J3_2'])
 ```
 It comes out that we cannot work with columns J3_1 and J3_2, which specify if the survey taker works in Armenia/abroad/both/no paid job. The reason is that when cleaning the data, we kept only the records where salary range or exact salary is mentioned.
-
-```{r}
-decoded_data <- decoded_data%>%
-  mutate(
-    E10 = case_when(
-      E10 == 1 ~ "Public",
-      E10 == 2 ~ "NGO",
-      E10 == 3 ~ "Private",
-      E10 == 4 ~ "Self-emplyed"
-    )
-  ) %>%
-  mutate(
-    F6 = case_when(
-      F6 == 1 ~ "Public",
-      F6 == 2 ~ "NGO",
-      F6 == 3 ~ "Private",
-      F6 == 4 ~ "Self-employed"
-    )
-  )
-```
 
 Let's see how many records we have with filled primary job and secondary ones.
 ```{r}
@@ -677,6 +699,7 @@ ggplot(summary_stats,
     fill = "Gender"
   ) +
   scale_y_continuous(labels = scales::comma) +
+  scale_fill_manual(values = c("Male" = "#56B4E9", "Female" = "#E78AC3")) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
@@ -684,7 +707,7 @@ Findings: In this chart, we have considered the records where the implicit salar
 Concentrating on the chart above, we can see that only females are recorded as self-employed (keeping in mind that the data is filtered to keep only records with mentioned salary). The analysis also shows that males earn more in NGOs, Private and Public enterprises, but the highest difference is in Private companies. Although there are more females who answered these questions then males, the difference still exists.
 
 ```{r}
-mean_salary_by_region <- decoded_data %>%
+salary_by_region_overview <- decoded_data %>%
   select(gender = B3, region = A3, salary = E14_1) %>%
   filter(!is.na(region), !is.na(gender), !is.na(salary)) %>%
   group_by(region, gender) %>%
@@ -692,6 +715,15 @@ mean_salary_by_region <- decoded_data %>%
             median_salary = median(salary, na.rm = TRUE), 
             min_salary = min(salary, na.rm = TRUE), 
             max_salary = max(salary, na.rm = TRUE))
+  
+salary_by_region_overview
+```
+```{r}
+mean_salary_by_region <- decoded_data %>%
+  select(gender = B3, region = A3, salary = E14_1) %>%
+  filter(!is.na(region), !is.na(gender), !is.na(salary)) %>%
+  group_by(region, gender) %>%
+  summarise(mean_salary = mean(salary, na.rm = TRUE))
   
 mean_salary_by_region
 ```
@@ -719,7 +751,6 @@ region_name_map <- tibble::tibble(
 armenia_map <- armenia_map %>%
   left_join(region_name_map, by = c("name" = "map_name"))
 ```
-
 
 ```{r}
 wage_gap_map <- armenia_map %>%
@@ -764,7 +795,6 @@ urban_rural_salary
 
 
 ```{r}
-
 ggplot(decoded_data, aes(x = A5, y = E14_1, fill = A5)) +
   geom_boxplot(outlier.color = "red", outlier.alpha = 0.3) +
     coord_cartesian(ylim = c(0, 500000)) +
@@ -777,3 +807,89 @@ ggplot(decoded_data, aes(x = A5, y = E14_1, fill = A5)) +
   scale_fill_manual(values = c("Urban" = "#66c2a5", "Rural" = "#fc8d62"))
 ```
 Findings: The mean salary in urban settlements is higher than in rural settlements. Moreover, the range of salaries is much bigger than that of urban salaries. 
+
+```{r}
+employees_by_industry <- decoded_data %>%
+  group_by(industry = E4_21groups_NACE_rev_2.2, gender = B3) %>%
+  summarise(employee_number = n())
+
+employees_by_industry
+```
+
+```{r}
+ggplot(decoded_data, aes(x = factor(E4_21groups_NACE_rev_2.2), fill = factor(B3))) +
+  geom_bar(position = "stack") + 
+  labs(
+    title = "Industry Distribution by Gender",
+    x = "Industry",
+    y = "Count",
+    fill = "Gender"
+  ) +
+  scale_fill_manual(values = c("Male" = "#56B4E9", "Female" = "#E78AC3")) +
+  theme_minimal() +
+  coord_flip() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+```
+
+```{r}
+ggplot(decoded_data, aes(x = factor(E2_9group), fill = factor(B3))) +
+  geom_bar(position = "stack") + 
+  labs(
+    title = "Industry Distribution by Gender",
+    x = "Industry",
+    y = "Count",
+    fill = "Gender"
+  ) +
+  scale_fill_manual(values = c("Male" = "#56B4E9", "Female" = "#E78AC3")) +
+  theme_minimal() +
+  coord_flip() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+```
+
+```{r}
+job_title_salary_overview <- decoded_data %>%
+  select(job = E2_9group, gender = B3, salary = E14_1) %>%
+  filter(!is.na(job), !is.na(gender), !is.na(salary)) %>%
+  group_by(job, gender) %>%
+  summarise(n = n(),
+            mean_salary = mean(salary),
+            median_salary = median(salary),
+            sd = sd(salary),
+            se = sd(salary) / sqrt(n()),
+            lower_ci = mean_salary - 1.96 * se,
+            upper_ci = mean_salary + 1.96 * se
+            )
+
+job_title_salary_overview
+```
+
+```{r}
+ggplot(job_title_salary_overview, 
+       aes(x = job, y = mean_salary, fill = gender)) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.7) +
+  geom_errorbar(
+    aes(ymin = lower_ci, ymax = upper_ci),
+    position = position_dodge(width = 0.8),
+    width = 0.2,
+    color = "black"
+  ) +
+  geom_text(
+    aes(label = paste0(round(mean_salary/1000, 1), "k \n(n=", n, ")"),
+        y = upper_ci),
+    position = position_dodge(width = 0.8),
+    vjust = -0.5,
+    size = 3
+  ) +
+  labs(
+    title = "Mean Salary (AMD) by Main Job/Activity",
+    subtitle = "Error bars show 95% confidence intervals",
+    x = "Job",
+    y = "Mean Salary (AMD)",
+    fill = "Gender"
+  ) +
+  scale_y_continuous(labels = scales::comma) +
+  scale_fill_manual(values = c("Male" = "#56B4E9", "Female" = "#E78AC3")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
