@@ -223,7 +223,6 @@ ggplot(salary_data, aes(x = gender, y = salary, fill = gender)) +
   geom_boxplot(outlier.shape = NA) +
   coord_cartesian(ylim = c(0, 500000)) +
   theme_minimal() +
-  scale_fill_manual(values = c("Male" = "#56B4E9", "Female" = "#E78AC3")) +
   labs(
     title = "Salary Distribution by Gender",
     x = "Gender",
@@ -522,7 +521,6 @@ ggplot(decoded_data, aes(x = factor(Age_16groups), fill = factor(B3))) +
     y = "Count",
     fill = "Gender"
   ) +
-  scale_fill_manual(values = c("Male" = "#56B4E9", "Female" = "#E78AC3")) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
 ```
@@ -714,7 +712,6 @@ ggplot(summary_stats,
     fill = "Gender"
   ) +
   scale_y_continuous(labels = scales::comma) +
-  scale_fill_manual(values = c("Male" = "#56B4E9", "Female" = "#E78AC3")) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
@@ -840,7 +837,6 @@ ggplot(decoded_data, aes(x = factor(E4_21groups_NACE_rev_2.2), fill = factor(B3)
     y = "Count",
     fill = "Gender"
   ) +
-  scale_fill_manual(values = c("Male" = "#56B4E9", "Female" = "#E78AC3")) +
   theme_minimal() +
   coord_flip() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
@@ -855,7 +851,6 @@ ggplot(decoded_data, aes(x = factor(E2_9group), fill = factor(B3))) +
     y = "Count",
     fill = "Gender"
   ) +
-  scale_fill_manual(values = c("Male" = "#56B4E9", "Female" = "#E78AC3")) +
   theme_minimal() +
   coord_flip() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
@@ -903,7 +898,6 @@ ggplot(job_title_salary_overview,
     fill = "Gender"
   ) +
   scale_y_continuous(labels = scales::comma) +
-  scale_fill_manual(values = c("Male" = "#56B4E9", "Female" = "#E78AC3")) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
@@ -939,5 +933,40 @@ educational_level_salary_overview <- decoded_data %>%
             sd = sd(salary))
 
 educational_level_salary_overview
+```
+```{r}
+education_profession_salary_overview <- decoded_data %>%
+  select(education = B7, profession = E2_9group, gender = B3, salary = E14_1) %>%
+  mutate(
+    education_group = case_when(
+      education %in% c("Illiterate", "No primary", "Primary", "Basic", 
+                      "Secondary / high", "Vocational", "Secondary specialized") ~ "No Higher Education",
+      education %in% c("Bachelor's degree", "Bachelor’s degree") ~ "Undergraduate",  # Both versions
+      education %in% c("Master's degree", "Certified specialist", 
+                      "Post-graduate (Ph.D, doctorate, internship, residency)") ~ "Graduate",
+      TRUE ~ NA_character_  # Explicit handling of any unexpected values
+    )
+  ) %>%
+  filter(!is.na(education_group), !is.na(profession), !is.na(gender), !is.na(salary)) %>%
+  group_by(profession, education_group, gender) %>%
+  summarise(
+    n = n(),
+    mean = mean(salary),
+    sd = sd(salary),
+    .groups = "drop"
+  )
+
+education_profession_salary_overview
+```
+ 
+For Chi-Square Tests of Independence
+```{r}
+salary_categorical <- decoded_data %>%
+  select(gender = B3, salary = E15) %>%
+  filter(!is.na(gender), !is.na(salary)) %>%
+  group_by(gender, salary) %>%
+  summarise(n = n())
+
+salary_categorical
 ```
 
