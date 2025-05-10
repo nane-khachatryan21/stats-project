@@ -789,7 +789,7 @@ p <- ggplot(wage_gap_map) +
 
 ggplotly(p, tooltip = "text")
 ```
-Findings: As shown in the map, there is a wage gap in all regions of Armenia, which fluctuates roughly between 50000 and 25000 AMD, with the smallest gap present in Ararat and the biggest in Armavir.
+Findings: As shown in the map, there is a wage gap in all regions of Armenia, which fluctuates roughly between 50000 and 25000 AMD, with the smallest gap present in Ararat and the largest in Armavir.
 
 Urban vs Rural mean salaries
 
@@ -839,7 +839,7 @@ ggplot(decoded_data, aes(x = factor(E4_21groups_NACE_rev_2.2), fill = factor(B3)
   coord_flip() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
 ```
-
+Findings: In industries such as agriculture, trade & repair, hospitality and media & publishing, the number of male and female employees is almost equally distributed. However, in construction, admin support, utilities, water & waste men comprise the majority of employees. Conversely, in education, arts & sports and public administration women make up for the majority of the employees.
 ```{r}
 ggplot(decoded_data, aes(x = factor(E2_9group), fill = factor(B3))) +
   geom_bar(position = "stack") + 
@@ -853,6 +853,7 @@ ggplot(decoded_data, aes(x = factor(E2_9group), fill = factor(B3))) +
   coord_flip() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
 ```
+Findings: Among occupations such as agricultural work and service & sales, the number of male and female employees is almost equally distributed. However, men make up the majority of employees in elementary occupations, operators, craft workers and legislators & managers. Conversely, women comprise the majority of employees among clerks, professionals, and technicians.
 ```{r}
 profession_salary_overview <- decoded_data %>%
   select(job = E2_9group, gender = B3, salary = E14_1) %>%
@@ -913,7 +914,7 @@ ggplot(job_title_salary_overview,
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
-
+Findings: Across all fields of works, men earn, on average, more than women do. The larges difference can be observed among agricultural workers, while the gap remains relatively close among operators and elementary occupations.
 ```{r}
 settlement_job_hypothesis_test_data <- decoded_data %>%
   select(settlement = A5, job = E2_9group, gender = B3, salary = E14_1) %>%
