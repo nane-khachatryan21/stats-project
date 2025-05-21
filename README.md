@@ -1,9 +1,4 @@
-# Gender Wage Gap in Armenia
-## Statistical Analysis Project
-
-![R](https://img.shields.io/badge/R-276DC3?style=for-the-badge&logo=r&logoColor=white)
-![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
-
+# Gender Wage Gap in Armenia: Statistical Analysis Project
 ## Project Overview
 Statistical analysis of gender wage gap in the Armenian labor market with focus on gender wage disparities across different:
 - Occupations
@@ -14,7 +9,43 @@ Statistical analysis of gender wage gap in the Armenian labor market with focus 
 ### Setup
 1. Clone repository
 2. Install required packages:  
-      install.packages(c("tidyverse", "readxl", "ggplot2", "sf", "broom", "knitr", "dplyr"))
+      - install.packages(c("tidyverse", "readxl", "ggplot2", "sf", "broom", "knitr", "dplyr"))
+
+## How to Use This Repository
+
+### **Step 1: Understand the Data**
+- Methodology: [`LFS Instructions.pdf`](LFS%20Instructions.pdf)
+- Survey questionnaire: [`LFS Questionnaire.pdf`](LFS%20Questionnaire.pdf)
+
+### **Step 2: Get the Raw Data**
+- Download: [`data.xlsx`](data.xlsx) *(immutable original)*
+
+### **Step 3: Data Cleaning**
+- Cleaning steps: [`data_cleaning.nb.html`](data_cleaning.nb.html)
+- Cleaned output: [`cleaned_data.xlsx`](cleaned_data.xlsx)
+
+### **Step 4: Analysis & Visualization**
+- Main script: [`data_filtering.Rmd`](data_filtering.Rmd)
+- Pre-run results: [`data_filtering.nb.html`](data_filtering.nb.html)
+- Map data: [`armenia.json`](armenia.json)
+
+### **Step 5: Hypothesis Testing**
+- Final report: [`Report.pdf`](Report.pdf) *(full analysis & conclusions)*
+
+---
+
+## Project Files
+
+| File | Description |
+|------|-------------|
+| [`data.xlsx`](data/raw/data.xlsx) | Raw dataset (original, immutable) |
+| [`cleaned_data.xlsx`](data/processed/cleaned_data.xlsx) | Cleaned data output |
+| [`data_cleaning.nb.html`](analysis/data_cleaning.nb.html) | Data cleaning documentation |
+| [`data_filtering.Rmd`](analysis/data_filtering.Rmd) | Main analysis script (R Markdown) |
+| [`data_filtering.nb.html`](analysis/data_filtering.nb.html) | Pre-run analysis output |
+| [`armenia.json`](data/armenia.json) | Geographic map data |
+| [`Report.pdf`](docs/Report.pdf) | Final compiled report |
+
 ## Run Analysis
 Execute in order:
 - data_cleaning.Rmd → Generates cleaned_data.xlsx
