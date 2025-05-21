@@ -38,13 +38,13 @@ Statistical analysis of gender wage gap in the Armenian labor market with focus 
 
 | File | Description |
 |------|-------------|
-| [`data.xlsx`](data/raw/data.xlsx) | Raw dataset (original, immutable) |
-| [`cleaned_data.xlsx`](data/processed/cleaned_data.xlsx) | Cleaned data output |
-| [`data_cleaning.nb.html`](analysis/data_cleaning.nb.html) | Data cleaning documentation |
-| [`data_filtering.Rmd`](analysis/data_filtering.Rmd) | Main analysis script (R Markdown) |
-| [`data_filtering.nb.html`](analysis/data_filtering.nb.html) | Pre-run analysis output |
-| [`armenia.json`](data/armenia.json) | Geographic map data |
-| [`Report.pdf`](docs/Report.pdf) | Final compiled report |
+| [`data.xlsx`](data.xlsx) | Raw dataset (original, immutable) |
+| [`cleaned_data.xlsx`](cleaned_data.xlsx) | Cleaned data output |
+| [`data_cleaning.nb.html`](data_cleaning.nb.html) | Data cleaning documentation |
+| [`data_filtering.Rmd`](data_filtering.Rmd) | Main analysis script (R Markdown) |
+| [`data_filtering.nb.html`](data_filtering.nb.html) | Pre-run analysis output |
+| [`armenia.json`](armenia.json) | Geographic map data |
+| [`Report.pdf`](Report.pdf) | Final compiled report |
 
 ## Run Analysis
 Execute in order:
