@@ -14,23 +14,23 @@ Statistical analysis of gender wage gap in the Armenian labor market with focus 
 ## How to Use This Repository
 
 ### **Step 1: Understand the Data**
-- **Methodology**: [`LFS Instructions.pdf`](LFS%20Instructions.pdf)
-- **Survey questionnaire**: [`LFS Questionnaire.pdf`](LFS%20Questionnaire.pdf)
+- Methodology: [`LFS Instructions.pdf`](LFS%20Instructions.pdf)
+- Survey questionnaire: [`LFS Questionnaire.pdf`](LFS%20Questionnaire.pdf)
 
 ### **Step 2: Get the Raw Data**
-- **Download**: [`data.xlsx`](data.xlsx) *(immutable original)*
+- Download: [`data.xlsx`](data.xlsx) *(immutable original)*
 
 ### **Step 3: Data Cleaning**
-- **Cleaning steps**: [`data_cleaning.nb.html`](data_cleaning.nb.html)
-- **Cleaned output**: [`cleaned_data.xlsx`](cleaned_data.xlsx)
+- Cleaning steps: [`data_cleaning.nb.html`](data_cleaning.nb.html)
+- Cleaned output: [`cleaned_data.xlsx`](cleaned_data.xlsx)
 
 ### **Step 4: Analysis & Visualization**
-- **Main script**: [`data_filtering.Rmd`](data_filtering.Rmd)
-- **Pre-run results**: [`data_filtering.nb.html`](data_filtering.nb.html)
-- **Map data**: [`armenia.json`](armenia.json)
+- Main script: [`data_filtering.Rmd`](data_filtering.Rmd)
+- Pre-run results: [`data_filtering.nb.html`](data_filtering.nb.html)
+- Map data: [`armenia.json`](armenia.json)
 
 ### **Step 5: Hypothesis Testing**
-- **Final report**: [`Report.pdf`](Report.pdf) *(full analysis & conclusions)*
+- Final report: [`Report.pdf`](Report.pdf) *(full analysis & conclusions)*
 
 ---
 
